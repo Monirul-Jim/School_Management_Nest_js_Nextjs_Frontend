@@ -1,11 +1,10 @@
 'use client'
 import React, { useState } from "react";
-import { useForm, SubmitHandler, FieldErrors } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useLoginUserMutation, useRegisterUserMutation } from "@/app/redux/api/authApi";
-import { setUser } from "@/app/redux/feature/auth/authSlice";
-import { useAppDispatch, useAppSelector } from "@/app/redux/feature/hook";
-import { RootState } from "@/app/redux/feature/store";
+import { useAppDispatch } from "@/redux/feature/hook";
+import { useLoginUserMutation, useRegisterUserMutation } from "@/redux/api/authApi";
+import { setUser } from "@/redux/feature/auth/authSlice";
 
 interface RegisterFormData {
   firstName: string;
@@ -30,9 +29,6 @@ interface LoginResponse {
   message?: string;
 }
 
-interface RegisterResponse {
-  message: string;
-}
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
@@ -49,7 +45,7 @@ const AuthPage: React.FC = () => {
   const onRegister: SubmitHandler<RegisterFormData> = async (data) => {
     setRegisterError(null);
     try {
-      const res: RegisterResponse = await registerUser(data).unwrap();
+       await registerUser(data).unwrap();
       reset();
       setIsLogin(true);
     } catch (err: any) {

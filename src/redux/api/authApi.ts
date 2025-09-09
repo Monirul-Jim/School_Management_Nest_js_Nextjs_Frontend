@@ -1,3 +1,4 @@
+import { UsersResponse } from "@/types/user.schema";
 import { baseApi } from "./baseApi";
 
 const authApi = baseApi.injectEndpoints({
@@ -16,12 +17,12 @@ const authApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
-    getAllUser: builder.query({
-      query: () => ({
-        url: "/auth",
+    getAllUser: builder.query<UsersResponse, { page?: number }>({
+      query: ({ page = 1 }) => ({
+        url: `/auth?page=${page}`,
         method: "GET",
       }),
-      providesTags: ["user"], // Provides the "user" tag for cache management
+      providesTags: ["user"],
     }),
 
     updateIsDeleted: builder.mutation({
@@ -35,20 +36,20 @@ const authApi = baseApi.injectEndpoints({
 
     updateRole: builder.mutation({
       query: ({ userId, role }) => ({
-        url: `/auth/${userId}/role`,
+        url: `/auth/update-role`,
         method: "PATCH",
-        body: { role },
+        body: { userId, role },
       }),
-      invalidatesTags: ["user"], // Invalidates the user cache
+      invalidatesTags: ["user"],
     }),
 
     updateStatus: builder.mutation({
       query: ({ userId, status }) => ({
-        url: `/auth/${userId}/status`,
+        url: `/auth/update-status`,
         method: "PATCH",
-        body: { status },
+        body: { userId, status },
       }),
-      invalidatesTags: ["user"], // Invalidates the user cache
+      invalidatesTags: ["user"],
     }),
   }),
 });

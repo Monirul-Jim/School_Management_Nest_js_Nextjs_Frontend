@@ -1,10 +1,10 @@
 'use client';
 
 import { JSX, useEffect, useState } from "react";
-import { useAppSelector } from "@/app/redux/feature/hook";
-import { RootState } from "@/app/redux/feature/store";
 import Link from "next/link";
 import { Users, GraduationCap, BookOpen, FileText, CreditCard, Home, X } from "lucide-react";
+import { RootState } from "@/redux/feature/store";
+import { useAppSelector } from "@/redux/feature/hook";
 
 export default function Sidebar({
   isOpen,
@@ -25,7 +25,7 @@ export default function Sidebar({
   const menuItems: Record<string, { label: string; href: string; icon: JSX.Element }[]> = {
     Admin: [
       { label: "Dashboard", href: "/dashboard/admin", icon: <Home size={18} /> },
-      { label: "User Management", href: "/dashboard/admin/users", icon: <Users size={18} /> },
+      { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <Users size={18} /> },
       { label: "Classes", href: "/dashboard/admin/classes", icon: <GraduationCap size={18} /> },
     ],
     Teacher: [

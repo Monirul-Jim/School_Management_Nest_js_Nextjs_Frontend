@@ -4,9 +4,9 @@ import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { logout } from "@/app/redux/feature/auth/authSlice";
-import { useAppSelector } from "@/app/redux/feature/hook";
-import { RootState } from "@/app/redux/feature/store";
+import { RootState } from "@/redux/feature/store";
+import { useAppSelector } from "@/redux/feature/hook";
+import { logout } from "@/redux/feature/auth/authSlice";
 
 export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const [isClient, setIsClient] = useState(false);

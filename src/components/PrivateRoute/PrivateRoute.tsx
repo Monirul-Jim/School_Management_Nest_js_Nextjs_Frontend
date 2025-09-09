@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useAppSelector } from "@/app/redux/feature/hook";
-import { RootState } from "@/app/redux/feature/store";
 import { useRouter } from "next/navigation";
+import { RootState } from "@/redux/feature/store";
+import { useAppSelector } from "@/redux/feature/hook";
 
 type UserRole = "Admin" | "Student" | "Teacher";
 
@@ -27,7 +27,7 @@ export default function PrivateRoute({
   }
 
   if (!user) {
-    router.push("/auth");
+    router.push("/login");
     return null;
   }
 

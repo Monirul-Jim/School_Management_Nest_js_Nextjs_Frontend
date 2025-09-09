@@ -17,11 +17,30 @@ const authApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
-    getAllUser: builder.query<UsersResponse, { page?: number }>({
-      query: ({ page = 1 }) => ({
-        url: `/auth?page=${page}`,
-        method: "GET",
-      }),
+    // getAllUser: builder.query<UsersResponse, { page?: number }>({
+    //   query: ({ page = 1 }) => ({
+    //     url: `/auth?page=${page}`,
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["user"],
+    // }),
+    // authApi.ts
+    getAllUser: builder.query<
+      UsersResponse,
+      { page?: number; search?: string; role?: string; status?: string }
+    >({
+      query: ({ page = 1, search, role, status }) => {
+        const queryParams = new URLSearchParams(
+          Object.entries({ page, search, role, status })
+            .filter(([, value]) => value !== undefined && value !== "")
+            .map(([key, value]) => [key, String(value)])
+        );
+
+        return {
+          url: `/auth?${queryParams.toString()}`,
+          method: "GET",
+        };
+      },
       providesTags: ["user"],
     }),
 

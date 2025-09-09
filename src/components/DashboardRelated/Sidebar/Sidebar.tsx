@@ -26,7 +26,7 @@ export default function Sidebar({
     Admin: [
       { label: "Dashboard", href: "/dashboard/admin", icon: <Home size={18} /> },
       { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <Users size={18} /> },
-      { label: "Classes", href: "/dashboard/admin/classes", icon: <GraduationCap size={18} /> },
+      { label: "Classes", href: "/dashboard/admin/createclasses", icon: <GraduationCap size={18} /> },
     ],
     Teacher: [
       { label: "Dashboard", href: "/dashboard/teacher", icon: <Home size={18} /> },

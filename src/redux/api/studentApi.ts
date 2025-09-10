@@ -28,7 +28,6 @@ export interface Student {
   updatedAt: string;
 }
 
-
 export interface CreateStudentDto {
   firstName?: string;
   lastName?: string;
@@ -73,7 +72,7 @@ const studentApi = baseApi.injectEndpoints({
         const queryParams = new URLSearchParams(
           Object.entries({ page, limit, search, classId, bloodGroup })
             .filter(([, value]) => value !== undefined && value !== "")
-             .map(([key, value]) => [key, String(value)])
+            .map(([key, value]) => [key, String(value)])
         );
 
         return {
@@ -102,6 +101,13 @@ const studentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Student"],
     }),
+    loginStudent: builder.mutation({
+      query: (data) => ({
+        url: "/students/login",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -110,6 +116,7 @@ export const {
   useGetAllStudentsQuery,
   useGetStudentByIdQuery,
   useUpdateStudentMutation,
+  useLoginStudentMutation
 } = studentApi;
 
 export default studentApi;

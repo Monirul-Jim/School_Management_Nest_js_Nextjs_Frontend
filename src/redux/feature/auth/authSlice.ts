@@ -5,7 +5,7 @@ export type TUser = {
   firstName: string;
   lastName: string;
   email: string;
-  role: string;
+  role?: string;
   status?: "active" | "blocked" | "deleted";
 };
 

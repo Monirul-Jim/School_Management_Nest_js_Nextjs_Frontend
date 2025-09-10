@@ -53,7 +53,7 @@ export default function Sidebar({
           { label: "Manage Teachers", href: "/dashboard/admin/usermanagement/manageteachers" },
         ],
       },
-     
+      
     ],
     Teacher: [
       { label: "Dashboard", href: "/dashboard/teacher", icon: <Home size={18} /> },
@@ -100,45 +100,47 @@ export default function Sidebar({
         </div>
 
         <nav className="flex flex-col gap-4 p-4">
-          {menuItems[user.role]?.map((item) => (
-            <div key={item.label}>
-              {item.subItems ? (
-                <>
-                  <button
-                    onClick={() => toggleDropdown(item.label)}
-                    className="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
+          {user.role && menuItems[user.role] ? (
+            menuItems[user.role].map((item) => (
+              <div key={item.label}>
+                {item.subItems ? (
+                  <>
+                    <button
+                      onClick={() => toggleDropdown(item.label)}
+                      className="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
+                    >
+                      <span className="flex items-center gap-3 text-sm font-medium">
+                        {item.icon}
+                        {item.label}
+                      </span>
+                      {openDropdown === item.label ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                    {openDropdown === item.label && (
+                      <div className="flex flex-col gap-2 pl-8 mt-2">
+                        {item.subItems.map((subItem) => (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className="text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href!}
+                    className="flex items-center gap-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
                   >
-                    <span className="flex items-center gap-3 text-sm font-medium">
-                      {item.icon}
-                      {item.label}
-                    </span>
-                    {openDropdown === item.label ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-                  {openDropdown === item.label && (
-                    <div className="flex flex-col gap-2 pl-8 mt-2">
-                      {item.subItems.map((subItem) => (
-                        <Link
-                          key={subItem.href}
-                          href={subItem.href}
-                          className="text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
-                        >
-                          {subItem.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Link
-                  href={item.href!}
-                  className="flex items-center gap-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
-                >
-                  {item.icon}
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Link>
-              )}
-            </div>
-          ))}
+                    {item.icon}
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                )}
+              </div>
+            ))
+          ) : null}
         </nav>
       </div>
     </>

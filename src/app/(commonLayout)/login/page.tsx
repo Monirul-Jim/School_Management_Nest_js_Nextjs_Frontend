@@ -1,11 +1,13 @@
-'use client'
+"use client";
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/redux/feature/hook";
-import { useLoginUserMutation, useRegisterUserMutation } from "@/redux/api/authApi";
+import {
+  useLoginUserMutation,
+  useRegisterUserMutation,
+} from "@/redux/api/authApi";
 import { setUser } from "@/redux/feature/auth/authSlice";
-
 interface RegisterFormData {
   firstName: string;
   lastName: string;
@@ -29,46 +31,53 @@ interface LoginResponse {
   message?: string;
 }
 
-
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const dispatch=useAppDispatch();
+  const dispatch = useAppDispatch();
 
   const [registerUser, { isLoading: registering }] = useRegisterUserMutation();
   const [loginUser, { isLoading: loggingIn }] = useLoginUserMutation();
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<RegisterFormData & LoginFormData>();
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<RegisterFormData & LoginFormData>();
   const onRegister: SubmitHandler<RegisterFormData> = async (data) => {
     setRegisterError(null);
     try {
-       await registerUser(data).unwrap();
+      await registerUser(data).unwrap();
       reset();
       setIsLogin(true);
-    } catch (err: any) {
-      setRegisterError(err?.data?.message || "Registration failed");
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "data" in err) {
+        const errorData = err as { data: { message?: string } };
+        setRegisterError(errorData?.data?.message || "Registration failed");
+      } else {
+        setRegisterError("Registration failed");
+      }
     }
   };
-
   const onLogin: SubmitHandler<LoginFormData> = async (data) => {
     setLoginError(null);
     try {
       const res: LoginResponse = await loginUser(data).unwrap();
-
       if (res.message) {
-        setLoginError(res.message); // blocked/deleted user message
+        setLoginError(res.message);
         return;
       }
-    dispatch(setUser({ user: res.user, token: res.accessToken }));
-
-
-      // Successful login: store token or user info in Redux/localStorage if needed
-      console.log('Login successful:', res);
-    } catch (err: any) {
-      setLoginError(err?.data?.message || "Login failed");
+      dispatch(setUser({ user: res.user, token: res.accessToken }));
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "data" in err) {
+        const errorData = err as { data: { message?: string } };
+        setLoginError(errorData?.data?.message || "Login failed");
+      } else {
+        setLoginError("Login failed");
+      }
     }
   };
 
@@ -88,43 +97,68 @@ const AuthPage: React.FC = () => {
           {isLogin ? "Login" : "Register"}
         </h2>
 
-        <form onSubmit={handleSubmit(isLogin ? onLogin : onRegister)} className="space-y-5">
+        <form
+          onSubmit={handleSubmit(isLogin ? onLogin : onRegister)}
+          className="space-y-5"
+        >
           {!isLogin && (
             <>
               <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  First Name
+                </label>
                 <input
                   {...register("firstName", { required: true })}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {errors.firstName && <span className="text-red-500 text-sm mt-1">First name required</span>}
+                {errors.firstName && (
+                  <span className="text-red-500 text-sm mt-1">
+                    First name required
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <label className="text-sm font-medium text-gray-700 mb-1">
+                  Last Name
+                </label>
                 <input
                   {...register("lastName", { required: true })}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {errors.lastName && <span className="text-red-500 text-sm mt-1">Last name required</span>}
+                {errors.lastName && (
+                  <span className="text-red-500 text-sm mt-1">
+                    Last name required
+                  </span>
+                )}
               </div>
             </>
           )}
 
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               type="email"
               {...register("email", { required: true })}
               className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.email && <span className="text-red-500 text-sm mt-1">Email required</span>}
-            {!isLogin && registerError && <span className="text-red-500 text-sm mt-1">{registerError}</span>}
-            {isLogin && loginError && <span className="text-red-500 text-sm mt-1">{loginError}</span>}
+            {errors.email && (
+              <span className="text-red-500 text-sm mt-1">Email required</span>
+            )}
+            {!isLogin && registerError && (
+              <span className="text-red-500 text-sm mt-1">{registerError}</span>
+            )}
+            {isLogin && loginError && (
+              <span className="text-red-500 text-sm mt-1">{loginError}</span>
+            )}
           </div>
 
           <div className="relative flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               type={showPassword ? "text" : "password"}
               {...register("password", { required: true, minLength: 6 })}
@@ -137,7 +171,11 @@ const AuthPage: React.FC = () => {
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
-            {errors.password && <span className="text-red-500 text-sm mt-1">Password must be at least 6 characters</span>}
+            {errors.password && (
+              <span className="text-red-500 text-sm mt-1">
+                Password must be at least 6 characters
+              </span>
+            )}
           </div>
 
           <button
@@ -152,7 +190,10 @@ const AuthPage: React.FC = () => {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button onClick={toggleForm} className="text-blue-500 font-semibold hover:underline cursor-pointer">
+          <button
+            onClick={toggleForm}
+            className="text-blue-500 font-semibold hover:underline cursor-pointer"
+          >
             {isLogin ? "Register" : "Login"}
           </button>
         </p>

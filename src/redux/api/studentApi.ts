@@ -11,16 +11,23 @@ export interface Student {
   presentAddress: string;
   permanentAddress: string;
   guardianNumber: string;
+  localGuardianName?: string;
   localGuardianNumber?: string;
   bloodGroup?: string;
+  gender: "Male" | "Female";
+  classRole?: number;
   class: {
     _id: string;
     name: string;
     section?: string;
   };
+  dateOfBirth: string;
+  email: string;
+  password: string;
   createdAt: string;
   updatedAt: string;
 }
+
 
 export interface CreateStudentDto {
   firstName?: string;
@@ -54,13 +61,19 @@ const studentApi = baseApi.injectEndpoints({
     }),
     getAllStudents: builder.query<
       PaginatedStudents,
-      { page?: number; limit?: number; search?: string } // <-- add search here
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        classId?: string;
+        bloodGroup?: string;
+      }
     >({
-      query: ({ page = 1, limit = 10, search }) => {
+      query: ({ page = 1, limit = 10, search, classId, bloodGroup }) => {
         const queryParams = new URLSearchParams(
-          Object.entries({ page, limit, search })
+          Object.entries({ page, limit, search, classId, bloodGroup })
             .filter(([, value]) => value !== undefined && value !== "")
-            .map(([key, value]) => [key, String(value)])
+             .map(([key, value]) => [key, String(value)])
         );
 
         return {
@@ -79,7 +92,7 @@ const studentApi = baseApi.injectEndpoints({
       providesTags: ["Student"],
     }),
     updateStudent: builder.mutation<
-      any,
+      Student,
       { id: string; body: Partial<Student> }
     >({
       query: ({ id, body }) => ({

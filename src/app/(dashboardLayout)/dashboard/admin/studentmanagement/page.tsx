@@ -3,6 +3,7 @@
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   useGetAllStudentsQuery,
+  useGetStudentByIdQuery,
   useRegisterStudentMutation,
   useUpdateStudentMutation,
 } from "@/redux/api/studentApi";
@@ -33,8 +34,8 @@ type StudentFormInputs = {
   dateOfBirth: string; // new field
 };
 
-interface StudentsTableProps {}
-export default function StudentForm({}: StudentsTableProps) {
+
+export default function StudentForm() {
   const { register, handleSubmit, reset } = useForm<StudentFormInputs>();
   const { data: classes = [] } = useGetStudentAllClassesQuery();
   const [registerStudent, { isLoading }] = useRegisterStudentMutation();
@@ -44,6 +45,12 @@ export default function StudentForm({}: StudentsTableProps) {
   const [updateStudent] = useUpdateStudentMutation();
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [selectedClass, setSelectedClass] = useState<string>("");
+  const [selectedBloodGroup, setSelectedBloodGroup] = useState<string>("");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data,
@@ -51,9 +58,14 @@ export default function StudentForm({}: StudentsTableProps) {
     isError,
   } = useGetAllStudentsQuery({
     page: currentPage,
-    search: debouncedSearch,
+    search: debouncedSearch || undefined,
+    classId: selectedClass || undefined,
+    bloodGroup: selectedBloodGroup || undefined,
   });
-
+  const { data: studentDetails, isLoading: isStudentLoading } =
+    useGetStudentByIdQuery(selectedStudentId ?? "", {
+      skip: !selectedStudentId,
+    });
   if (sLoading)
     return (
       <div className="flex justify-center items-center h-64">
@@ -67,26 +79,31 @@ export default function StudentForm({}: StudentsTableProps) {
     );
 
   const students = data?.data || [];
-  const onSubmit = async (formData: StudentFormInputs) => {
-    try {
-      if (editingStudent) {
-        // 🔄 Update existing student
-        await updateStudent({
-          id: editingStudent._id,
-          body: formData,
-        }).unwrap();
-        alert("Student updated successfully!");
-      } else {
-        // ➕ Register new student
-        await registerStudent(formData).unwrap();
-        alert("Student registered successfully!");
-      }
-      reset();
-      setEditingStudent(null); // clear edit mode
-    } catch (err: any) {
-      alert(err?.data?.message || "Failed to save student");
+ const onSubmit = async (formData: StudentFormInputs) => {
+  try {
+    if (editingStudent) {
+      // 🔄 Update existing student
+      await updateStudent({
+        id: editingStudent._id,
+        body: formData,
+      }).unwrap();
+      alert("Student updated successfully!");
+    } else {
+      // ➕ Register new student
+      await registerStudent(formData).unwrap();
+      alert("Student registered successfully!");
     }
-  };
+    reset();
+    setEditingStudent(null); // clear edit mode
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "data" in err) {
+      const errorData = err as { data: { message?: string } };
+      alert(errorData?.data?.message || "Failed to save student");
+    } else {
+      alert("Failed to save student");
+    }
+  }
+};
 
   return (
     <div className="bg-gray-100 flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
@@ -285,7 +302,7 @@ export default function StudentForm({}: StudentsTableProps) {
           >
             {isLoading ? (
               <>
-                <Loader2 className="animate-spin mr-2" />{" "}
+                <Loader2 className="animate-spin mr-2" />
                 {editingStudent ? "Updating..." : "Registering..."}
               </>
             ) : editingStudent ? (
@@ -298,7 +315,8 @@ export default function StudentForm({}: StudentsTableProps) {
         {/* Students Table */}
         <div className="  mt-10">
           {/* Search */}
-          <div className="flex mb-4">
+          <div className="flex gap-4 mb-4">
+            {/* Search */}
             <input
               type="text"
               placeholder="Search by name or guardian"
@@ -306,6 +324,34 @@ export default function StudentForm({}: StudentsTableProps) {
               onChange={(e) => setSearch(e.target.value)}
               className="border rounded px-2 py-1 text-sm flex-1"
             />
+
+            {/* Class Filter */}
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="">All Classes</option>
+              {classes.map((cls: StudentClass) => (
+                <option key={cls._id} value={cls._id}>
+                  {cls.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Blood Group Filter */}
+            <select
+              value={selectedBloodGroup}
+              onChange={(e) => setSelectedBloodGroup(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="">All Blood Groups</option>
+              {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+                <option key={bg} value={bg}>
+                  {bg}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Desktop Table */}
@@ -382,6 +428,16 @@ export default function StudentForm({}: StudentsTableProps) {
                       >
                         <Pencil className="w-5 h-5" />
                       </button>
+                      <button
+                        onClick={() => {
+                          setSelectedStudentId(student._id);
+                          setIsModalOpen(true);
+                        }}
+                        className="text-green-600 hover:text-green-800"
+                        aria-label={`View details of ${student.firstName} ${student.lastName}`}
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -391,7 +447,7 @@ export default function StudentForm({}: StudentsTableProps) {
 
           {/* Mobile Card View */}
           <div className="md:hidden flex flex-col gap-4">
-            {students.map((student: Student, index: number) => (
+            {students?.map((student: Student, index: number) => (
               <div
                 key={student._id}
                 className="bg-white shadow rounded-xl p-4 space-y-2"
@@ -410,7 +466,7 @@ export default function StudentForm({}: StudentsTableProps) {
                 </div>
                 <div className="text-sm">Guardian: {student.fatherName}</div>
                 <div className="text-sm">
-                  Class:{" "}
+                  Class:
                   {typeof student.class === "string"
                     ? student.class
                     : student.class?.name}
@@ -420,7 +476,7 @@ export default function StudentForm({}: StudentsTableProps) {
                   Blood Group: {student.bloodGroup || "-"}
                 </div>
                 <div className="text-sm">
-                  DOB:{" "}
+                  DOB:
                   {student.dateOfBirth
                     ? new Date(student.dateOfBirth).toLocaleDateString()
                     : "-"}
@@ -447,6 +503,98 @@ export default function StudentForm({}: StudentsTableProps) {
           </div>
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-lg relative shadow-2xl transform transition-all duration-300 scale-95 animate-fade-in">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors"
+              onClick={() => setIsModalOpen(false)}
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center space-x-4 mb-6 border-b pb-4">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Eye size={24} className="text-blue-600" />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                {studentDetails?.firstName} {studentDetails?.lastName}
+              </h2>
+            </div>
+
+            {/* Loading State */}
+            {isStudentLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <Loader2 className="animate-spin mr-2 text-blue-600" />
+                Loading...
+              </div>
+            ) : studentDetails ? (
+              <div className="space-y-3 text-gray-700">
+                <div className="grid grid-cols-2 gap-4">
+                  <p className="font-medium">Father:</p>
+                  <p>{studentDetails.fatherName}</p>
+
+                  <p className="font-medium">Mother:</p>
+                  <p>{studentDetails.motherName}</p>
+
+                  <p className="font-medium">Gender:</p>
+                  <p>{studentDetails.gender}</p>
+
+                  <p className="font-medium">Class:</p>
+                  <p>
+                    {typeof studentDetails.class === "string"
+                      ? studentDetails.class
+                      : studentDetails.class?.name ?? "-"}
+                  </p>
+
+                  <p className="font-medium">Role:</p>
+                  <p>{studentDetails.classRole ?? "-"}</p>
+
+                  <p className="font-medium">Blood Group:</p>
+                  <p>{studentDetails.bloodGroup ?? "-"}</p>
+
+                  <p className="font-medium">DOB:</p>
+                  <p>
+                    {studentDetails.dateOfBirth
+                      ? new Date(
+                          studentDetails.dateOfBirth
+                        ).toLocaleDateString()
+                      : "-"}
+                  </p>
+
+                  <p className="font-medium">Guardian Number:</p>
+                  <p>{studentDetails.guardianNumber}</p>
+
+                  <p className="font-medium">Local Guardian:</p>
+                  <p>
+                    {studentDetails.localGuardianName ?? "-"} (
+                    {studentDetails.localGuardianNumber ?? "-"})
+                  </p>
+
+                  <p className="font-medium">Address:</p>
+                  <p>
+                    {studentDetails.presentAddress},
+                    {studentDetails.permanentAddress}
+                  </p>
+
+                  <p className="font-medium">Email:</p>
+                  <p>{studentDetails.email}</p>
+
+                  <p className="font-medium">Password:</p>
+                  <p>{studentDetails.password}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">
+                No student data found.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

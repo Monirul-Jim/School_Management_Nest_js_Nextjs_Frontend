@@ -37,6 +37,10 @@ export const studentClassApi = baseApi.injectEndpoints({
       },
       providesTags: ["StudentClass"],
     }),
+      getStudentAllClasses: builder.query<StudentClassResponse[], void>({
+      query: () => "/class/all-classes",
+      providesTags: ["StudentClass"],
+    }),
 
     // Get single class by ID
     getStudentClassById: builder.query<StudentClassResponse, string>({
@@ -81,4 +85,5 @@ export const {
   useCreateStudentClassMutation,
   useUpdateStudentClassMutation,
   useDeleteStudentClassMutation,
+  useGetStudentAllClassesQuery
 } = studentClassApi;

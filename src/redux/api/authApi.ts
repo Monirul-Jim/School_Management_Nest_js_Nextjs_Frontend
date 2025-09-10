@@ -44,14 +44,6 @@ const authApi = baseApi.injectEndpoints({
       providesTags: ["user"],
     }),
 
-    updateIsDeleted: builder.mutation({
-      query: ({ userId, isDeleted }) => ({
-        url: `/auth/${userId}/isDeleted`,
-        method: "PATCH",
-        body: { isDeleted },
-      }),
-      invalidatesTags: ["user"], // Ensures the cache for the "user" tag is invalidated
-    }),
 
     updateRole: builder.mutation({
       query: ({ userId, role }) => ({
@@ -76,7 +68,6 @@ export const {
   useRegisterUserMutation,
   useLoginUserMutation,
   useGetAllUserQuery,
-  useUpdateIsDeletedMutation,
   useUpdateRoleMutation,
   useUpdateStatusMutation,
 } = authApi;

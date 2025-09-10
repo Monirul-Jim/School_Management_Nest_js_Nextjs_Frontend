@@ -2,9 +2,17 @@
 
 import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, GraduationCap, BookOpen, FileText, CreditCard, Home, X } from "lucide-react";
+import { Users, BookOpen, FileText, CreditCard, Home, X, ChevronDown, ChevronUp } from "lucide-react";
 import { RootState } from "@/redux/feature/store";
 import { useAppSelector } from "@/redux/feature/hook";
+
+// Define a new type for nested menu items
+type MenuItem = {
+  label: string;
+  href?: string; // href is optional for dropdown parents
+  icon: JSX.Element;
+  subItems?: { label: string; href: string }[]; // Sub-items for dropdown
+};
 
 export default function Sidebar({
   isOpen,
@@ -15,6 +23,7 @@ export default function Sidebar({
 }) {
   const user = useAppSelector((state: RootState) => state.auth.user);
   const [isClient, setIsClient] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -22,11 +31,29 @@ export default function Sidebar({
 
   if (!isClient || !user) return null;
 
-  const menuItems: Record<string, { label: string; href: string; icon: JSX.Element }[]> = {
+  const menuItems: Record<string, MenuItem[]> = {
     Admin: [
       { label: "Dashboard", href: "/dashboard/admin", icon: <Home size={18} /> },
-      { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <Users size={18} /> },
-      { label: "Classes", href: "/dashboard/admin/createclasses", icon: <GraduationCap size={18} /> },
+      { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <Home size={18} /> },
+      {
+        label: "Student Management",
+        icon: <Users size={18} />,
+        subItems: [
+          { label: "Create Student", href: "/dashboard/admin/studentmanagement" },
+          { label: "Manage Students", href: "/dashboard/admin/usermanagement/managestudents" },
+          { label: "Manage Teachers", href: "/dashboard/admin/usermanagement/manageteachers" },
+        ],
+      },
+      {
+        label: "Class Management",
+        icon: <Users size={18} />,
+        subItems: [
+          { label: "Classes", href: "/dashboard/admin/createclasses" },
+          { label: "Manage Students", href: "/dashboard/admin/usermanagement/managestudents" },
+          { label: "Manage Teachers", href: "/dashboard/admin/usermanagement/manageteachers" },
+        ],
+      },
+     
     ],
     Teacher: [
       { label: "Dashboard", href: "/dashboard/teacher", icon: <Home size={18} /> },
@@ -38,6 +65,10 @@ export default function Sidebar({
       { label: "Results", href: "/dashboard/student/results", icon: <FileText size={18} /> },
       { label: "Payments", href: "/dashboard/student/payments", icon: <CreditCard size={18} /> },
     ],
+  };
+
+  const toggleDropdown = (label: string) => {
+    setOpenDropdown(openDropdown === label ? null : label);
   };
 
   return (
@@ -70,14 +101,43 @@ export default function Sidebar({
 
         <nav className="flex flex-col gap-4 p-4">
           {menuItems[user.role]?.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
-            >
-              {item.icon}
-              <span className="text-sm font-medium">{item.label}</span>
-            </Link>
+            <div key={item.label}>
+              {item.subItems ? (
+                <>
+                  <button
+                    onClick={() => toggleDropdown(item.label)}
+                    className="flex items-center justify-between w-full text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
+                  >
+                    <span className="flex items-center gap-3 text-sm font-medium">
+                      {item.icon}
+                      {item.label}
+                    </span>
+                    {openDropdown === item.label ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                  {openDropdown === item.label && (
+                    <div className="flex flex-col gap-2 pl-8 mt-2">
+                      {item.subItems.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          className="text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
+                        >
+                          {subItem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href={item.href!}
+                  className="flex items-center gap-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-md transition"
+                >
+                  {item.icon}
+                  <span className="text-sm font-medium">{item.label}</span>
+                </Link>
+              )}
+            </div>
           ))}
         </nav>
       </div>

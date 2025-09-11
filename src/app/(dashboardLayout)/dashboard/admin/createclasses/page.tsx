@@ -17,30 +17,51 @@ export default function ClassesTable() {
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading: isFetching, isError } = useGetStudentClassesQuery({
+  const {
+    data,
+    isLoading: isFetching,
+    isError,
+  } = useGetStudentClassesQuery({
     page: currentPage,
     search: debouncedSearch,
   });
 
-  const [createClass, { isLoading: isCreating }] = useCreateStudentClassMutation();
-  const [updateClass, { isLoading: isUpdating }] = useUpdateStudentClassMutation();
-  const [deleteClass, { isLoading: isDeleting }] = useDeleteStudentClassMutation();
+  const [createClass, { isLoading: isCreating }] =
+    useCreateStudentClassMutation();
+  const [updateClass, { isLoading: isUpdating }] =
+    useUpdateStudentClassMutation();
+  const [deleteClass, { isLoading: isDeleting }] =
+    useDeleteStudentClassMutation();
 
   const [newClassName, setNewClassName] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>("");
+  const [selectedGrade, setSelectedGrade] = useState<number | "">("");
 
   const handleCreate = async () => {
-    if (!newClassName.trim()) return;
-    await createClass({ name: newClassName });
+    if (!newClassName.trim() || selectedGrade === "") return;
+
+    await createClass({
+      name: newClassName,
+      grade: selectedGrade, // ✅ now allowed
+    });
+
     setNewClassName("");
+    setSelectedGrade("");
   };
 
   const handleUpdate = async (id: string) => {
-    if (!editingName.trim()) return;
-    await updateClass({ id, name: editingName });
+    if (!editingName.trim() || selectedGrade === "") return;
+
+    await updateClass({
+      id,
+      name: editingName,
+      grade: selectedGrade, // ✅ include the grade
+    });
+
     setEditingId(null);
     setEditingName("");
+    setSelectedGrade("");
   };
 
   const handleDelete = async (id: string) => {
@@ -57,7 +78,9 @@ export default function ClassesTable() {
   }
 
   if (isError) {
-    return <div className="text-red-500 text-center">Failed to load classes.</div>;
+    return (
+      <div className="text-red-500 text-center">Failed to load classes.</div>
+    );
   }
 
   return (
@@ -78,14 +101,30 @@ export default function ClassesTable() {
           onChange={(e) => setNewClassName(e.target.value)}
           className="border rounded px-2 py-1 text-sm flex-1"
         />
+        <select
+          value={selectedGrade}
+          onChange={(e) => setSelectedGrade(Number(e.target.value))}
+          className="border rounded px-2 py-1 text-sm"
+        >
+          <option value="">Select Grade</option>
+          {Array.from({ length: 12 }, (_, i) => i + 1).map((grade) => (
+            <option key={grade} value={grade}>
+              Grade {grade}
+            </option>
+          ))}
+        </select>
         <button
           onClick={handleCreate}
-          disabled={isCreating}
+          disabled={isCreating || !newClassName.trim() || selectedGrade === ""}
           className={`px-4 py-1 rounded text-white ${
             isCreating ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
           }`}
         >
-          {isCreating ? <Loader2 className="animate-spin mr-1 inline-block" size={16} /> : "Add"}
+          {isCreating ? (
+            <Loader2 className="animate-spin mr-1 inline-block" size={16} />
+          ) : (
+            "Add"
+          )}
         </button>
       </div>
 
@@ -96,6 +135,7 @@ export default function ClassesTable() {
             <tr>
               <th className="px-4 py-2 text-left">#</th>
               <th className="px-4 py-2 text-left">Class Name</th>
+              <th className="px-4 py-2 text-left">Grade</th>
               <th className="px-4 py-2 text-left">Status</th>
               <th className="px-4 py-2 text-left">Created</th>
               <th className="px-4 py-2 text-left">Updated</th>
@@ -104,8 +144,13 @@ export default function ClassesTable() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
             {data?.data.map((cls: StudentClass, index: number) => (
-              <tr key={cls._id} className="hover:bg-gray-50 transition-colors duration-200">
-                <td className="px-4 py-2">{(data.page - 1) * data.limit + index + 1}</td>
+              <tr
+                key={cls._id}
+                className="hover:bg-gray-50 transition-colors duration-200"
+              >
+                <td className="px-4 py-2">
+                  {(data.page - 1) * data.limit + index + 1}
+                </td>
                 <td className="px-4 py-2">
                   {editingId === cls._id ? (
                     <input
@@ -118,9 +163,35 @@ export default function ClassesTable() {
                     cls.name
                   )}
                 </td>
-                <td className="px-4 py-2">{cls.isDeleted ? "Deleted" : "Active"}</td>
-                <td className="px-4 py-2">{new Date(cls.createdAt).toLocaleString()}</td>
-                <td className="px-4 py-2">{new Date(cls.updatedAt).toLocaleString()}</td>
+                <td className="px-4 py-2">
+                  {editingId === cls._id ? (
+                    <select
+                      value={selectedGrade}
+                      onChange={(e) => setSelectedGrade(Number(e.target.value))}
+                      className="border rounded px-2 py-1 text-sm w-full"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                        (grade) => (
+                          <option key={grade} value={grade}>
+                            Grade {grade}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  ) : (
+                    `Grade ${cls.grade}` // show current grade when not editing
+                  )}
+                </td>
+
+                <td className="px-4 py-2">
+                  {cls.isDeleted ? "Deleted" : "Active"}
+                </td>
+                <td className="px-4 py-2">
+                  {new Date(cls.createdAt).toLocaleString()}
+                </td>
+                <td className="px-4 py-2">
+                  {new Date(cls.updatedAt).toLocaleString()}
+                </td>
                 <td className="px-4 py-2 flex gap-2">
                   {editingId === cls._id ? (
                     <button
@@ -130,7 +201,14 @@ export default function ClassesTable() {
                         isUpdating ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      {isUpdating ? <Loader2 className="animate-spin inline-block" size={14} /> : "Save"}
+                      {isUpdating ? (
+                        <Loader2
+                          className="animate-spin inline-block"
+                          size={14}
+                        />
+                      ) : (
+                        "Save"
+                      )}
                     </button>
                   ) : (
                     <button
@@ -151,7 +229,16 @@ export default function ClassesTable() {
                         isDeleting ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      {isDeleting ? <Loader2 className="animate-spin inline-block" size={14} /> : <><Trash2 size={16} /> Delete</>}
+                      {isDeleting ? (
+                        <Loader2
+                          className="animate-spin inline-block"
+                          size={14}
+                        />
+                      ) : (
+                        <>
+                          <Trash2 size={16} /> Delete
+                        </>
+                      )}
                     </button>
                   )}
                 </td>
@@ -164,12 +251,19 @@ export default function ClassesTable() {
       {/* Mobile Cards */}
       <div className="md:hidden flex flex-col gap-4">
         {data?.data.map((cls: StudentClass, index: number) => (
-          <div key={cls._id} className="bg-white shadow rounded-xl p-4 space-y-2">
+          <div
+            key={cls._id}
+            className="bg-white shadow rounded-xl p-4 space-y-2"
+          >
             <div className="flex justify-between items-center">
               <div className="font-semibold text-gray-700">{cls.name}</div>
-              <div className="text-gray-500 text-sm">{(data.page - 1) * data.limit + index + 1}</div>
+              <div className="text-gray-500 text-sm">
+                {(data.page - 1) * data.limit + index + 1}
+              </div>
             </div>
-            <div className="text-sm text-gray-600">Status: {cls.isDeleted ? "Deleted" : "Active"}</div>
+            <div className="text-sm text-gray-600">
+              Status: {cls.isDeleted ? "Deleted" : "Active"}
+            </div>
             {editingId === cls._id && (
               <input
                 type="text"
@@ -179,8 +273,14 @@ export default function ClassesTable() {
               />
             )}
             <div className="text-xs text-gray-500 space-y-1">
-              <div><span className="font-semibold">Created:</span> {new Date(cls.createdAt).toLocaleString()}</div>
-              <div><span className="font-semibold">Updated:</span> {new Date(cls.updatedAt).toLocaleString()}</div>
+              <div>
+                <span className="font-semibold">Created:</span>{" "}
+                {new Date(cls.createdAt).toLocaleString()}
+              </div>
+              <div>
+                <span className="font-semibold">Updated:</span>{" "}
+                {new Date(cls.updatedAt).toLocaleString()}
+              </div>
             </div>
             <div className="flex gap-2">
               {editingId === cls._id ? (
@@ -225,7 +325,9 @@ export default function ClassesTable() {
       )}
 
       <div className="mt-4 flex flex-col sm:flex-row justify-between text-sm text-gray-600 gap-2 sm:gap-0">
-        <div>Page {data?.page} of {data?.totalPages}</div>
+        <div>
+          Page {data?.page} of {data?.totalPages}
+        </div>
         <div>Total Classes: {data?.total}</div>
       </div>
     </div>

@@ -35,6 +35,15 @@ export default function Sidebar({
     Admin: [
       { label: "Dashboard", href: "/dashboard/admin", icon: <Home size={18} /> },
       { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <Home size={18} /> },
+       {
+        label: "Class Management",
+        icon: <Users size={18} />,
+        subItems: [
+          { label: "Classes", href: "/dashboard/admin/createclasses" },
+          { label: "Manage Students", href: "/dashboard/admin/usermanagement/managestudents" },
+          { label: "Manage Teachers", href: "/dashboard/admin/usermanagement/manageteachers" },
+        ],
+      },
       {
         label: "Student Management",
         icon: <Users size={18} />,
@@ -44,15 +53,16 @@ export default function Sidebar({
           { label: "Manage Teachers", href: "/dashboard/admin/usermanagement/manageteachers" },
         ],
       },
-      {
-        label: "Class Management",
+       {
+        label: "Subject Management",
         icon: <Users size={18} />,
         subItems: [
-          { label: "Classes", href: "/dashboard/admin/createclasses" },
-          { label: "Manage Students", href: "/dashboard/admin/usermanagement/managestudents" },
+          { label: "Create Subject", href: "/dashboard/admin/createsubject" },
+          { label: "Assign Subject", href: "/dashboard/admin/assignsubject" },
           { label: "Manage Teachers", href: "/dashboard/admin/usermanagement/manageteachers" },
         ],
       },
+     
       
     ],
     Teacher: [

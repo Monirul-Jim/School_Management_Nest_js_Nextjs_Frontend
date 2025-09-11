@@ -4,6 +4,7 @@ import { baseApi } from "./baseApi";
 export interface StudentClassResponse {
   _id: string;
   name: string;
+  grade:number;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -22,7 +23,13 @@ export const studentClassApi = baseApi.injectEndpoints({
     // Get all classes with pagination, search, sort
     getStudentClasses: builder.query<
       GetStudentClassesResponse,
-      { page?: number; limit?: number; search?: string; sortField?: string; sortOrder?: 'asc' | 'desc' }
+      {
+        page?: number;
+        limit?: number;
+        search?: string;
+        sortField?: string;
+        sortOrder?: "asc" | "desc";
+      }
     >({
       query: ({ page = 1, limit = 10, search, sortField, sortOrder }) => {
         const queryParams = new URLSearchParams(
@@ -37,7 +44,7 @@ export const studentClassApi = baseApi.injectEndpoints({
       },
       providesTags: ["StudentClass"],
     }),
-      getStudentAllClasses: builder.query<StudentClassResponse[], void>({
+    getStudentAllClasses: builder.query<StudentClassResponse[], void>({
       query: () => "/class/all-classes",
       providesTags: ["StudentClass"],
     }),
@@ -49,7 +56,10 @@ export const studentClassApi = baseApi.injectEndpoints({
     }),
 
     // Create class
-    createStudentClass: builder.mutation<StudentClassResponse, { name: string }>({
+    createStudentClass: builder.mutation<
+      StudentClassResponse,
+      { name: string ,grade:number}
+    >({
       query: (body) => ({
         url: "/class",
         method: "POST",
@@ -58,15 +68,17 @@ export const studentClassApi = baseApi.injectEndpoints({
       invalidatesTags: ["StudentClass"],
     }),
 
-    updateStudentClass: builder.mutation<StudentClassResponse, { id: string; name: string }>( {
-  query: ({ id, ...body }) => ({
-    url: `/class/${id}`,
-    method: "PATCH",
-    body,
-  }),
-  invalidatesTags: ["StudentClass"],
-}),
-
+    updateStudentClass: builder.mutation<
+      StudentClassResponse,
+      { id: string; name: string,grade:number }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/class/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["StudentClass"],
+    }),
 
     // Soft delete class
     deleteStudentClass: builder.mutation<StudentClassResponse, string>({
@@ -85,5 +97,5 @@ export const {
   useCreateStudentClassMutation,
   useUpdateStudentClassMutation,
   useDeleteStudentClassMutation,
-  useGetStudentAllClassesQuery
+  useGetStudentAllClassesQuery,
 } = studentClassApi;

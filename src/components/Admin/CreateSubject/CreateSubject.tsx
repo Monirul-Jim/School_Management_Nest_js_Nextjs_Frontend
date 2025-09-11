@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Pencil, Trash } from "lucide-react";
+import { Loader2, Pencil, Trash } from "lucide-react";
 import { useGetStudentAllClassesQuery } from "@/redux/api/studentClassApi";
 import {
   useCreateSubjectMutation,
@@ -12,6 +12,16 @@ import {
 } from "@/redux/api/subjectApi";
 import { CreateSubjectInput, SubjectType } from "@/types/subject.schema";
 import Pagination from "@/Shared/Pagination/Pagination";
+type StudentClassType = {
+  _id: string;
+  name: string;
+  grade: number;
+  isDeleted: boolean;
+  students: string[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
 
 const subjectTypes: SubjectType[] = ["MCQ", "CQ", "PRACTICAL", "WR"];
 
@@ -48,7 +58,6 @@ const SubjectManagement: React.FC = () => {
   const { data: subjects, isLoading: subjectsLoading } = useGetSubjectsQuery();
   const [createSubject, { isLoading: creating }] = useCreateSubjectMutation();
   const [updateSubject, { isLoading: updating }] = useUpdateSubjectMutation();
-
   useEffect(() => {
     if (editingSubject) reset(editingSubject);
   }, [editingSubject, reset]);
@@ -93,17 +102,48 @@ const SubjectManagement: React.FC = () => {
             {...register("name", { required: true })}
             className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           />
-          <select
-            {...register("studentClass", { required: true })}
-            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select Class</option>
-            {Classes?.map((cls) => (
-              <option key={cls._id} value={cls._id}>
-                {cls.name}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="studentClass"
+            control={control}
+            rules={{ required: "Please select at least one class" }}
+            render={({ field, fieldState }) => {
+              // Make sure value is always an array
+              const valueArray: string[] = Array.isArray(field.value)
+                ? field.value.map((v) => (typeof v === "string" ? v : v._id))
+                : [];
+
+              return (
+                <div className="flex flex-col">
+                  <label>Select Class(es)</label>
+                  <select
+                    multiple
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    value={valueArray}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(
+                        e.target.selectedOptions,
+                        (opt) => opt.value
+                      );
+                      field.onChange(selectedOptions);
+                    }}
+                    onBlur={field.onBlur}
+                  >
+                    {Classes?.map((cls) => (
+                      <option key={cls._id} value={cls._id}>
+                        {cls.name}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldState.error && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </div>
+              );
+            }}
+          />
+
           <input
             type="number"
             {...register("totalMark", {
@@ -181,11 +221,22 @@ const SubjectManagement: React.FC = () => {
                       )
                     }
                   >
-                    {subjects?.map((sub: any) => (
-                      <option key={sub._id} value={sub._id}>
-                        {sub.name} — {sub.studentClass?.name || "No Class"}
-                      </option>
-                    ))}
+                    {subjects?.map((sub: any) => {
+                      const classNames = Array.isArray(sub.studentClass)
+                        ? sub.studentClass
+                            .map((cls: StudentClassType) => cls.name)
+                            .join(", ")
+                        : sub.studentClass &&
+                          typeof sub.studentClass === "object"
+                        ? sub.studentClass.name
+                        : "No Class";
+
+                      return (
+                        <option key={sub._id} value={sub._id}>
+                          {sub.name} — {classNames}
+                        </option>
+                      );
+                    })}
                   </select>
                 )}
               />
@@ -195,10 +246,19 @@ const SubjectManagement: React.FC = () => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
           disabled={creating || updating}
         >
-          {editingSubject ? "Update Subject" : "Create Subject"}
+          {creating || updating ? (
+            <>
+              <Loader2 className="animate-spin h-5 w-5" />
+              {editingSubject ? "Updating..." : "Creating..."}
+            </>
+          ) : editingSubject ? (
+            "Update Subject"
+          ) : (
+            "Create Subject"
+          )}
         </button>
       </form>
 
@@ -235,9 +295,15 @@ const SubjectManagement: React.FC = () => {
               <th className="px-4 py-2 text-left">Class</th>
               <th className="px-4 py-2 text-left">Types</th>
               <th className="px-4 py-2 text-left">Total Marks</th>
+              <th className="px-4 py-2 text-left">MCQ</th>
+              <th className="px-4 py-2 text-left">CQ</th>
+              <th className="px-4 py-2 text-left">Practical</th>
+              <th className="px-4 py-2 text-left">WR</th>
+              <th className="px-4 py-2 text-left">Merged With</th>
               <th className="px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-100">
             {subjectsData?.data?.map((sub: CreateSubjectInput, idx: number) => (
               <tr key={sub._id} className="hover:bg-gray-50">
@@ -249,13 +315,28 @@ const SubjectManagement: React.FC = () => {
 
                 <td className="px-4 py-2">{sub.name}</td>
                 <td className="px-4 py-2">
-                  {typeof sub.studentClass === "object" &&
-                  sub.studentClass !== null
+                  {Array.isArray(sub.studentClass)
+                    ? sub.studentClass.map((cls) => cls.name).join(", ")
+                    : sub.studentClass && typeof sub.studentClass === "object"
                     ? sub.studentClass.name
                     : "-"}
                 </td>
+
                 <td className="px-4 py-2">{sub.types?.join(", ")}</td>
                 <td className="px-4 py-2">{sub.totalMark}</td>
+                <td className="px-4 py-2">{sub.mcqMark ? sub.mcqMark : "-"}</td>
+                <td className="px-4 py-2">{sub.cqMark ? sub.cqMark : "-"}</td>
+                <td className="px-4 py-2">
+                  {sub.practicalMark ? sub.practicalMark : "-"}
+                </td>
+                <td className="px-4 py-2">{sub.WR ? sub.WR : "-"}</td>
+
+                <td className="px-4 py-2">
+                  {sub.mergedWith?.length
+                    ? sub.mergedWith.map((m: any) => m.name).join(", ")
+                    : "-"}
+                </td>
+
                 <td className="px-4 py-2 flex gap-2">
                   <button
                     onClick={() => setEditingSubject(sub)}

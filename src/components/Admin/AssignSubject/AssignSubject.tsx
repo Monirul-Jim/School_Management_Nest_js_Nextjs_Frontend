@@ -10,7 +10,6 @@ import { AssignSubjectDto } from "@/types/assignSubject.schema";
 import Pagination from "@/Shared/Pagination/Pagination";
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
 import { useGetStudentAllClassesQuery } from "@/redux/api/studentClassApi";
-import { StudentClass } from "@/types/create-student.schema";
 import { Loader2 } from "lucide-react";
 
 const AssignSubject: React.FC = () => {
@@ -46,14 +45,18 @@ const AssignSubject: React.FC = () => {
     try {
       await assignSubjects(data).unwrap();
       alert("Subjects assigned successfully!");
-    } catch (error: any) {
-      alert(error?.data?.message || "Failed to assign subjects");
+    } catch (error: unknown) {
+         if (typeof error === "object" && error !== null && "data" in error) {
+      const err = error as { data?: { message?: string } };
+      alert(err.data?.message || "Failed to assign subjects");
+    } else {
+      alert("Failed to assign subjects");
+    }
     }
   };
   const {
     data: assignedSubjects,
     isLoading: assignedLoading,
-    refetch,
   } = useGetAllAssignSubjectsQuery(
     {
       page: assignedPage,

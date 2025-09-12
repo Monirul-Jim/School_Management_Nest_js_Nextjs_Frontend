@@ -1,4 +1,24 @@
 import { baseApi } from "./baseApi";
+// Type for a single subject mark
+interface SubjectMark {
+  subjectId: string;
+  marks: Record<string, number>; // e.g., { "WR": 54 }
+  _id: string;
+}
+
+// Type for the updated StudentMark object
+interface StudentMark {
+  _id: string;
+  marks: SubjectMark[];
+  __v: number;
+}
+
+// API response type for upsertMarks
+interface UpsertMarksResponse {
+  success: boolean;
+  message: string;
+  data: StudentMark;
+}
 
 export const gradesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -21,19 +41,19 @@ export const gradesApi = baseApi.injectEndpoints({
     }),
 
     // Upsert marks for a specific assignment
-    upsertMarks: builder.mutation({
-      query: ({
-        assignSubjectId,
-        marksInput,
-      }: {
+    upsertMarks: builder.mutation<
+      UpsertMarksResponse, // you can type the response if needed
+      {
         assignSubjectId: string;
         marksInput: Record<string, Record<string, number>>;
-      }) => ({
+      }
+    >({
+      query: ({ assignSubjectId, marksInput }) => ({
         url: `/grades/marks/${assignSubjectId}`,
         method: "POST",
         body: marksInput,
       }),
-      invalidatesTags: ["Grades"], // refetch grades after update
+      invalidatesTags: ["Grades"], // ensures UI refresh
     }),
   }),
 });

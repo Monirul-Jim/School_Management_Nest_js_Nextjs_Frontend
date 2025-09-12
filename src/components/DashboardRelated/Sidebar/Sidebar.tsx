@@ -2,16 +2,28 @@
 
 import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, BookOpen, FileText, CreditCard, Home, X, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Users,
+  FileText,
+  CreditCard,
+  Home,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Layers,
+  FilePlus,
+  Book,
+  FileCheck,
+  UserPlus,
+} from "lucide-react";
 import { RootState } from "@/redux/feature/store";
 import { useAppSelector } from "@/redux/feature/hook";
 
-// Define a new type for nested menu items
 type MenuItem = {
   label: string;
-  href?: string; // href is optional for dropdown parents
+  href?: string;
   icon: JSX.Element;
-  subItems?: { label: string; href: string }[]; // Sub-items for dropdown
+  subItems?: { label: string; href: string }[];
 };
 
 export default function Sidebar({
@@ -34,10 +46,10 @@ export default function Sidebar({
   const menuItems: Record<string, MenuItem[]> = {
     Admin: [
       { label: "Dashboard", href: "/dashboard/admin", icon: <Home size={18} /> },
-      { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <Home size={18} /> },
-       {
+      { label: "User Management", href: "/dashboard/admin/usermanagement", icon: <UserPlus size={18} /> },
+      {
         label: "Class Management",
-        icon: <Users size={18} />,
+        icon: <Layers size={18} />,
         subItems: [
           { label: "Classes", href: "/dashboard/admin/createclasses" },
         ],
@@ -49,21 +61,26 @@ export default function Sidebar({
           { label: "Create Student", href: "/dashboard/admin/studentmanagement" },
         ],
       },
-       {
+      {
         label: "Subject Management",
-        icon: <Users size={18} />,
+        icon: <Book size={18} />,
         subItems: [
           { label: "Create Subject", href: "/dashboard/admin/createsubject" },
           { label: "Assign Subject", href: "/dashboard/admin/assignsubject" },
         ],
       },
-     
-      
+      {
+        label: "Exams",
+        icon: <FileCheck size={18} />,
+        subItems: [
+          { label: "Manage Exams", href: "/dashboard/admin/manageexams" },
+        ],
+      },
     ],
     Teacher: [
       { label: "Dashboard", href: "/dashboard/teacher", icon: <Home size={18} /> },
-      { label: "Exams", href: "/dashboard/teacher/studentmarks", icon: <BookOpen size={18} /> },
-      { label: "Give Marks", href: "/dashboard/teacher/marks", icon: <FileText size={18} /> },
+      { label: "Student Marks", href: "/dashboard/teacher/studentmarks", icon: <FileText size={18} /> },
+      { label: "Assignments", href: "/dashboard/teacher/assignments", icon: <FilePlus size={18} /> },
     ],
     Student: [
       { label: "Dashboard", href: "/dashboard/student", icon: <Home size={18} /> },
@@ -71,7 +88,6 @@ export default function Sidebar({
       { label: "Payments", href: "/dashboard/student/payments", icon: <CreditCard size={18} /> },
     ],
   };
-
   const toggleDropdown = (label: string) => {
     setOpenDropdown(openDropdown === label ? null : label);
   };

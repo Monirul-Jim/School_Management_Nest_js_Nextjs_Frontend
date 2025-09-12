@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Loader2, Pencil, Trash } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { useGetStudentAllClassesQuery } from "@/redux/api/studentClassApi";
 import {
   useCreateSubjectMutation,
@@ -10,18 +10,19 @@ import {
   useGetSubjectsQuery,
   useGetPaginationSubjectsQuery,
 } from "@/redux/api/subjectApi";
-import { CreateSubjectInput, SubjectType } from "@/types/subject.schema";
+import {
+  CreateSubjectInput,
+  MergedSubject,
+  SubjectType,
+} from "@/types/subject.schema";
 import Pagination from "@/Shared/Pagination/Pagination";
-type StudentClassType = {
-  _id: string;
-  name: string;
-  grade: number;
-  isDeleted: boolean;
-  students: string[];
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-};
+import { StudentClass } from "@/types/create-student.schema";
+// Define API error type
+interface ApiError {
+  data?: {
+    message?: string;
+  };
+}
 
 const subjectTypes: SubjectType[] = ["MCQ", "CQ", "PRACTICAL", "WR"];
 
@@ -83,8 +84,18 @@ const SubjectManagement: React.FC = () => {
       reset();
       refetch();
       alert("Subject saved successfully!");
-    } catch (error: any) {
-      alert(error?.data?.message || "Error saving subject");
+    } catch (error: unknown) {
+      // Type guard for ApiError
+      const isApiError = (err: unknown): err is ApiError =>
+        typeof err === "object" && err !== null && "data" in err;
+
+      if (error instanceof Error) {
+        alert(error.message || "Error saving subject");
+      } else if (isApiError(error) && typeof error.data?.message === "string") {
+        alert(error.data.message);
+      } else {
+        alert("Error saving subject");
+      }
     }
   };
 
@@ -210,36 +221,81 @@ const SubjectManagement: React.FC = () => {
               <Controller
                 name="mergedWith"
                 control={control}
-                render={({ field }) => (
-                  <select
-                    multiple
-                    {...field}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    onChange={(e) =>
-                      field.onChange(
-                        Array.from(e.target.selectedOptions, (opt) => opt.value)
-                      )
-                    }
-                  >
-                    {subjects?.map((sub: any) => {
-                      const classNames = Array.isArray(sub.studentClass)
-                        ? sub.studentClass
-                            .map((cls: StudentClassType) => cls.name)
-                            .join(", ")
-                        : sub.studentClass &&
-                          typeof sub.studentClass === "object"
-                        ? sub.studentClass.name
-                        : "No Class";
+                render={({ field }) => {
+                  // field.value should be string[] representing _id of selected subjects
+                  const selectedIds: string[] =
+                    field.value?.map((m: MergedSubject | string) =>
+                      typeof m === "string" ? m : m._id
+                    ) ?? [];
 
-                      return (
-                        <option key={sub._id} value={sub._id}>
-                          {sub.name} — {classNames}
-                        </option>
-                      );
-                    })}
-                  </select>
-                )}
+                  return (
+                    <select
+                      multiple
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      value={selectedIds}
+                      onChange={(e) => {
+                        const newIds = Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value
+                        );
+                        field.onChange(newIds);
+                      }}
+                      onBlur={field.onBlur}
+                    >
+                      {subjects?.map((sub: CreateSubjectInput) => {
+                        const classNames = Array.isArray(sub.studentClass)
+                          ? sub.studentClass
+                              .map((cls: StudentClass) => cls.name)
+                              .join(", ")
+                          : sub.studentClass &&
+                            typeof sub.studentClass === "object"
+                          ? sub.studentClass.name
+                          : "No Class";
+
+                        return (
+                          <option key={sub._id} value={sub._id}>
+                            {sub.name} — {classNames}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  );
+                }}
               />
+
+              // <Controller
+              //   name="mergedWith"
+              //   control={control}
+              //   render={({ field }) => (
+              //     <select
+              //       multiple
+              //       {...field}
+              //       className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              //       onChange={(e) =>
+              //         field.onChange(
+              //           Array.from(e.target.selectedOptions, (opt) => opt.value)
+              //         )
+              //       }
+              //     >
+              //       {subjects?.map((sub: CreateSubjectInput) => {
+              //         const classNames = Array.isArray(sub.studentClass)
+              //           ? sub.studentClass
+              //               .map((cls: StudentClassType) => cls.name)
+              //               .join(", ")
+              //           : sub.studentClass &&
+              //             typeof sub.studentClass === "object"
+              //           ? sub.studentClass.name
+              //           : "No Class";
+
+              //         return (
+              //           <option key={sub._id} value={sub._id}>
+              //             {sub.name} — {classNames}
+              //           </option>
+              //         );
+              //       })}
+              //     </select>
+              //   )}
+              // />
             )}
           </div>
         </div>
@@ -308,7 +364,8 @@ const SubjectManagement: React.FC = () => {
             {subjectsData?.data?.map((sub: CreateSubjectInput, idx: number) => (
               <tr key={sub._id} className="hover:bg-gray-50">
                 <td className="px-4 py-2">
-                  {(subjectsData?.page! - 1) * (subjectsData?.limit ?? 10) +
+                  {((subjectsData?.page ?? 1) - 1) *
+                    (subjectsData?.limit ?? 10) +
                     idx +
                     1}
                 </td>
@@ -333,7 +390,9 @@ const SubjectManagement: React.FC = () => {
 
                 <td className="px-4 py-2">
                   {sub.mergedWith?.length
-                    ? sub.mergedWith.map((m: any) => m.name).join(", ")
+                    ? sub.mergedWith
+                        .map((m: MergedSubject) => m.name)
+                        .join(", ")
                     : "-"}
                 </td>
 

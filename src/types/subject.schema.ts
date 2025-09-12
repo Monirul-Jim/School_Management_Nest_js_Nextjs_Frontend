@@ -6,6 +6,10 @@ export interface StudentClass {
   _id: string;
   name: string;
 }
+export interface MergedSubject {
+  _id: string;
+  name: string;
+}
 
 // Update the CreateSubjectInput interface
 export interface CreateSubjectInput {
@@ -18,5 +22,5 @@ export interface CreateSubjectInput {
   cqMark?: number;
   practicalMark?: number;
   WR?: number;
-  mergedWith?: string[];
+  mergedWith?: MergedSubject[]; 
 }

@@ -97,7 +97,6 @@ export const assignApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-// Export hooks
 export const {
   useAssignSubjectsMutation,
   useGetStudentSubjectsQuery,

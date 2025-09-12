@@ -62,7 +62,7 @@ export default function Sidebar({
     ],
     Teacher: [
       { label: "Dashboard", href: "/dashboard/teacher", icon: <Home size={18} /> },
-      { label: "Exams", href: "/dashboard/teacher/exams", icon: <BookOpen size={18} /> },
+      { label: "Exams", href: "/dashboard/teacher/studentmarks", icon: <BookOpen size={18} /> },
       { label: "Give Marks", href: "/dashboard/teacher/marks", icon: <FileText size={18} /> },
     ],
     Student: [

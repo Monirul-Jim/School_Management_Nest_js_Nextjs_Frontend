@@ -1,83 +1,41 @@
-import { baseApi } from './baseApi';
-
-export interface AssignMarksDto {
-  assignSubjectId: string; 
-  mcqMark?: number;
-  cqMark?: number;
-  practicalMark?: number;
-  WR?: number;
-}
-
-export interface StudentMark {
-  _id: string;
-  assignSubjectId: string; 
-  studentId: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-  };
-  classId: {
-    _id: string;
-    name: string;
-  };
-  subjectIds: {
-    _id: string;
-    name: string;
-  }[];
-  mainSubjectId?: {
-    _id: string;
-    name: string;
-  };
-  fourthSubjectId?: {
-    _id: string;
-    name: string;
-  };
-  mcqMark?: number;
-  cqMark?: number;
-  practicalMark?: number;
-  WR?: number;
-  totalMark?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface GetAllMarksParams {
-  classId?: string;
-  studentId?: string;
-}
-
+import { baseApi } from "./baseApi";
 
 export const gradesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    assignMarks: builder.mutation<StudentMark, AssignMarksDto>({
-      query: (dto) => ({
-        url: '/grades/marks',
-        method: 'PATCH',
-        body: dto,
+    // Fetch all grades
+    getAllGrades: builder.query({
+      query: (params?: {
+        classId?: string;
+        studentId?: string;
+        page?: number;
+        limit?: number;
+        search?: string;
+        sortField?: string;
+        sortOrder?: "asc" | "desc";
+      }) => ({
+        url: "/grades",
+        method: "GET",
+        params,
       }),
-      invalidatesTags: ['Grades'],
+      providesTags: ["Grades"],
     }),
 
-    getMarks: builder.query<StudentMark, string>({
-      query: (assignSubjectId) => `/grades/${assignSubjectId}`,
-      providesTags: ['Grades'],
-    }),
-
-    getAllMarks: builder.query<StudentMark[], GetAllMarksParams>({
-      query: ({ classId, studentId }) => {
-        const params = new URLSearchParams();
-        if (classId) params.append('classId', classId);
-        if (studentId) params.append('studentId', studentId);
-        return `/grades/all?${params.toString()}`;
-      },
-      providesTags: ['Grades'],
+    // Upsert marks for a specific assignment
+    upsertMarks: builder.mutation({
+      query: ({
+        assignSubjectId,
+        marksInput,
+      }: {
+        assignSubjectId: string;
+        marksInput: Record<string, Record<string, number>>;
+      }) => ({
+        url: `/grades/marks/${assignSubjectId}`,
+        method: "POST",
+        body: marksInput,
+      }),
+      invalidatesTags: ["Grades"], // refetch grades after update
     }),
   }),
-  overrideExisting: false,
 });
 
-export const {
-  useAssignMarksMutation,
-  useGetMarksQuery,
-  useGetAllMarksQuery,
-} = gradesApi;
+export const { useGetAllGradesQuery, useUpsertMarksMutation } = gradesApi;

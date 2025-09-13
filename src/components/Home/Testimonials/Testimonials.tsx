@@ -75,6 +75,7 @@ const Testimonials = () => {
               <Image
                 src={t.photo}
                 alt={t.name}
+                loading="lazy"
                 width={96}
                 height={96}
                 className="w-24 h-24 rounded-full mb-4 object-cover border-4 border-blue-500"

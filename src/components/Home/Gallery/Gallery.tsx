@@ -50,6 +50,7 @@ const Gallery = () => {
             >
               <Image
                 src={src}
+                loading="lazy"
                 width={100}
                 height={100}
                 alt={`Gallery ${i + 1}`}

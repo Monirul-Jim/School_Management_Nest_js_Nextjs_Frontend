@@ -121,6 +121,7 @@ const AchievementsWithTeacherAwards = () => {
               <Image
                 width={120}
                 height={120}
+                loading="lazy"
                 src={t.photo}
                 alt={t.name}
                 className="rounded-full border-4 border-blue-500 mb-4 object-cover"

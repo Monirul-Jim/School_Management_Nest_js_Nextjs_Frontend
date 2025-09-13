@@ -55,6 +55,7 @@ const TeacherSpeeches = () => {
               <Image
                 src={teachers[0].photo}
                 alt={teachers[0].name}
+                loading="lazy"
                 fill
                 className="rounded-full object-cover"
               />
@@ -79,6 +80,7 @@ const TeacherSpeeches = () => {
                 <Image
                   src={t.photo}
                   alt={t.name}
+                  loading="lazy"
                   fill
                   className="rounded-full object-cover border-4 border-blue-300"
                 />

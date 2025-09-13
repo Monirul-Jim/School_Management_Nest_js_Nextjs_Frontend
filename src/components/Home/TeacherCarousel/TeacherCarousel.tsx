@@ -91,6 +91,7 @@ const TeacherCarousel = () => {
                 <Image
                   src={teacher.photo}
                   alt={teacher.name}
+                  loading="lazy"
                   width={150}
                   height={150}
                   className="rounded-full border-4 border-blue-500 mb-6 object-cover mx-auto transform transition-transform duration-300 hover:scale-110"

@@ -1,12 +1,15 @@
-// app/dashboard/student/page.tsx
-'use client'
+
 
 import PrivateRoute from "@/components/PrivateRoute/PrivateRoute";
-
-export default function StudentDashboard() {
+import { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Student Dashboard | MySchool",
+  description: "Access your courses, grades, deadlines, and achievements in one place.",
+};
+export default function StudentDashboard({children}: {children: React.ReactNode}) {
   return (
     <PrivateRoute role="Student">
-      <div className="text-2xl font-bold">Welcome Student Dashboard</div>
+      <div >{children}</div>
     </PrivateRoute>
   );
 }

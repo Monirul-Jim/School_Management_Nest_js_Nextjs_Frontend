@@ -55,7 +55,19 @@ export const gradesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Grades"], // ensures UI refresh
     }),
+    getMyGrades: builder.query({
+      query: (params?: { page?: number; limit?: number; userId?: string }) => ({
+        url: "/grades/my-grades",
+        method: "GET",
+        params, // page, limit, userId
+      }),
+      providesTags: ["Grades"],
+    }),
   }),
 });
 
-export const { useGetAllGradesQuery, useUpsertMarksMutation } = gradesApi;
+export const {
+  useGetAllGradesQuery,
+  useUpsertMarksMutation,
+  useGetMyGradesQuery,
+} = gradesApi;

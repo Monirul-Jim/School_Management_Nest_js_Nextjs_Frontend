@@ -84,7 +84,7 @@ export default function Sidebar({
     ],
     Student: [
       { label: "Dashboard", href: "/dashboard/student", icon: <Home size={18} /> },
-      { label: "Results", href: "/dashboard/student/results", icon: <FileText size={18} /> },
+      { label: "Results", href: "/dashboard/students/results", icon: <FileText size={18} /> },
       { label: "Payments", href: "/dashboard/student/payments", icon: <CreditCard size={18} /> },
     ],
   };

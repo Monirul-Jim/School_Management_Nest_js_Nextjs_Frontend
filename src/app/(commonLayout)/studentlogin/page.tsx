@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Check, Copy, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/redux/feature/hook";
 import { setUser } from "@/redux/feature/auth/authSlice";
 import { useLoginStudentMutation } from "@/redux/api/studentApi";
@@ -23,14 +23,20 @@ interface LoginResponse {
 }
 
 const LoginPage: React.FC = () => {
-
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
+  const credentials = {
+    Student: { email: "cubidojegu@mailinator.com", password: "12345678" },
+  };
 
   const [loginStudent, { isLoading: loggingIn }] = useLoginStudentMutation();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>();
 
   const onLogin: SubmitHandler<LoginFormData> = async (data) => {
     setLoginError(null);
@@ -50,6 +56,13 @@ const LoginPage: React.FC = () => {
       }
     }
   };
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, fieldKey: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldKey);
+    setTimeout(() => setCopiedField(null), 2000); // reset after 2s
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -60,18 +73,26 @@ const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit(onLogin)} className="space-y-5">
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               type="email"
               {...register("email", { required: true })}
               className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {errors.email && <span className="text-red-500 text-sm mt-1">Email required</span>}
-            {loginError && <span className="text-red-500 text-sm mt-1">{loginError}</span>}
+            {errors.email && (
+              <span className="text-red-500 text-sm mt-1">Email required</span>
+            )}
+            {loginError && (
+              <span className="text-red-500 text-sm mt-1">{loginError}</span>
+            )}
           </div>
 
           <div className="relative flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               type={showPassword ? "text" : "password"}
               {...register("password", { required: true, minLength: 6 })}
@@ -85,7 +106,9 @@ const LoginPage: React.FC = () => {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
             {errors.password && (
-              <span className="text-red-500 text-sm mt-1">Password must be at least 6 characters</span>
+              <span className="text-red-500 text-sm mt-1">
+                Password must be at least 6 characters
+              </span>
             )}
           </div>
 
@@ -98,6 +121,44 @@ const LoginPage: React.FC = () => {
             Login
           </button>
         </form>
+        <div className="w-full  gap-6">
+          {Object.entries(credentials).map(([role, cred]) => (
+            <div
+              key={role}
+              className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-xl transition"
+            >
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                {role}
+              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700">Email: {cred.email}</span>
+                <button
+                  onClick={() => handleCopy(cred.email, `${role}-email`)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  {copiedField === `${role}-email` ? (
+                    <Check size={16} />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700">Password: {cred.password}</span>
+                <button
+                  onClick={() => handleCopy(cred.password, `${role}-password`)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  {copiedField === `${role}-password` ? (
+                    <Check size={16} />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

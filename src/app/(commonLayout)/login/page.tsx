@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Check, Copy, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAppDispatch } from "@/redux/feature/hook";
 import {
   useLoginUserMutation,
@@ -37,6 +37,18 @@ const AuthPage: React.FC = () => {
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
+    const credentials = {
+    Admin: { email: "monirul@gmail.com", password: "12345678" },
+    Teacher: { email: "motiur@gmail.com", password: "12345678" },
+  };
+
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, fieldKey: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldKey);
+    setTimeout(() => setCopiedField(null), 2000); // reset after 2s
+  };
 
   const [registerUser, { isLoading: registering }] = useRegisterUserMutation();
   const [loginUser, { isLoading: loggingIn }] = useLoginUserMutation();
@@ -94,7 +106,7 @@ const AuthPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">
-          {isLogin ? "Login" : "Register"}
+          {isLogin ? "Admin/Teacher Login" : "Admin Register"}
         </h2>
 
         <form
@@ -197,6 +209,44 @@ const AuthPage: React.FC = () => {
             {isLogin ? "Register" : "Login"}
           </button>
         </p>
+        <div className="w-full  gap-6">
+          {Object.entries(credentials).map(([role, cred]) => (
+            <div
+              key={role}
+              className="bg-white p-3 rounded-2xl shadow-md border border-gray-100 hover:shadow-xl transition"
+            >
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                {role}
+              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700">Email: {cred.email}</span>
+                <button
+                  onClick={() => handleCopy(cred.email, `${role}-email`)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  {copiedField === `${role}-email` ? (
+                    <Check size={16} />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700">Password: {cred.password}</span>
+                <button
+                  onClick={() => handleCopy(cred.password, `${role}-password`)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  {copiedField === `${role}-password` ? (
+                    <Check size={16} />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

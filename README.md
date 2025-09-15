@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏫 School Management System
 
-## Getting Started
+[![Built with NestJS](https://img.shields.io/badge/Backend-NestJS-blue?logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![Built with Next.js](https://img.shields.io/badge/Frontend-Next.js-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-green?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-16.x-green?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Swagger](https://img.shields.io/badge/API-Swagger-blue?logo=swagger&logoColor=white)](https://swagger.io/)
 
-First, run the development server:
+
+
+
+## 📄 API Documentation (Swagger)
+
+The backend uses **Swagger** for API documentation, which is **only available in development**.
+
+- **Local Development:**  
+  Run the backend server: http://localhost:5000/api/docs
+
+  ```bash
+  npm run start:dev
+Swagger is disabled in production because Vercel serverless functions cannot serve static assets required by Swagger UI.
+
+
+# 🏫 School Management System  
+
+A **full-stack web application** for managing school operations, built with **NestJS (Backend)** and **Next.js (Frontend)**.  
+It helps schools manage **students, teachers, classes, subjects, exams, and attendance** with role-based dashboards.  
+
+🌐 **Live Demo** → [school-management-frontend-omega.vercel.app/](https://school-management-frontend-omega.vercel.app/)  
+
+---
+
+## 📂 Project Structure  
+
+- **Frontend (Next.js)** → [/School_Management_Nest_js_Nextjs_Frontend](https://github.com/Monirul-Jim/School_Management_Nest_js_Nextjs_Frontend)  
+- **Backend (NestJS)** → [/School_Management_Nest_js_Backend](https://github.com/Monirul-Jim/School_Management_Nest_js_Backend)  
+
+---
+
+## ✨ Features  
+
+- 🔐 **Authentication & Authorization** (JWT)  
+- 👨‍💼 **Role-based Access** → Admin, Teacher, Student  
+- 🏫 Manage **Students, Teachers, Classes, Subjects**  
+- 📝 Attendance tracking & exam results  
+- 📊 School-wide **Reports & Analytics Dashboard**  
+- 🎨 **Modern Responsive UI** (Next.js + TailwindCSS)  
+- 🗄️ **PostgreSQL Database** with TypeORM  
+- 📑 **Swagger API Documentation**  
+
+---
+
+## 👥 User Roles & Permissions  
+
+### 👨‍💼 Admin  
+Admins have **full system control**:  
+- Manage Teachers (add, edit, delete)  
+- Manage Students (enroll, update, remove)  
+- Create and assign Classes & Subjects  
+- Handle Exams & Attendance  
+- View Reports & Statistics  
+- Assign User Roles  
+
+---
+
+### 👩‍🏫 Teacher  
+Teachers can:  
+- Manage students in assigned classes  
+- Take Attendance  
+- Add / Update Exam Results  
+- View assigned Classes & Subjects  
+- Communicate with Students  
+
+---
+
+### 👩‍🎓 Student  
+Students can:  
+- View Profile & Class details  
+- See Attendance records  
+- Check Exam Results & Progress Reports  
+- Access Subjects  
+- Interact with Teachers  
+
+---
+
+## 🛠️ Tech Stack  
+
+**Frontend**  
+- ⚛️ Next.js (React Framework)  
+- 🎨 TailwindCSS  
+- 🔗 Redux  
+- 📝 React Hook Form  
+
+**Backend**  
+- 🚀 NestJS  
+- 🗄️ Mongoose  
+- 🐘 MongoDB  
+- 🔐 JWT Authentication  
+- 📑 Swagger  
+
+---
+
+## ⚙️ Installation & Setup  
+
+### 1️⃣ Clone Repositories  
 
 ```bash
+# Frontend
+git clone https://github.com/Monirul-Jim/School_Management_Nest_js_Nextjs_Frontend.git
+
+# Backend
+git clone https://github.com/Monirul-Jim/School_Management_Nest_js_Backend.git
+
+2️⃣ Backend Setup
+cd School_Management_Nest_js_Backend
+
+# Install dependencies
+npm install
+
+# Copy env file
+cp .env.example .env
+
+
+# Start backend server
+npm run start:dev
+
+📌 Runs at → http://localhost:5000
+
+3️⃣ Frontend Setup
+
+cd School_Management_Nest_js_Nextjs_Frontend
+
+# Install dependencies
+npm install
+
+# Copy env file
+cp .env.example .env
+
+# Start frontend server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+🏗️ System Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Frontend (Next.js + TailwindCSS)
+          |
+          | REST API (Axios)
+          v
+Backend (NestJS + Mongoose + class-validator + JWT)
+          |
+          v
+        MongoDB
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+📜 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
